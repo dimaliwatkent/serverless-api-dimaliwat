@@ -1,5 +1,9 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const DataForm = () => {
   const [data, setData] = useState([]);
@@ -7,6 +11,7 @@ const DataForm = () => {
   const [age, setAge] = useState("");
   const [error, setError] = useState(null);
   const [editItem, setEditItem] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     axios
@@ -15,6 +20,7 @@ const DataForm = () => {
       )
       .then((response) => {
         setData(response.data);
+        setIsLoading(false);
       })
       .catch((error) => {
         console.error("There was an error!", error);
@@ -25,10 +31,12 @@ const DataForm = () => {
     e.preventDefault();
 
     if (!name || !age) {
-      setError("Name and age are required");
+      setError("Name and age are required!");
+      setTimeout(() => {
+        setError(null); // Clear the error message after 5 seconds
+      }, 5000);
       return;
     }
-
     const url = editItem
       ? `https://dimaliwatkent-authors-api.netlify.app/.netlify/functions/api/${editItem._id}`
       : "https://dimaliwatkent-authors-api.netlify.app/.netlify/functions/api/";
@@ -81,35 +89,77 @@ const DataForm = () => {
   return (
     <div>
       <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Name"
-        />
+        <div className="flex w-full max-w-3xl items-center space-x-2">
+          <Input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Name"
+          />
 
-        <input
-          type="text"
-          value={age}
-          onChange={(e) => setAge(e.target.value)}
-          placeholder="Age"
-        />
+          <Input
+            type="text"
+            value={age}
+            onChange={(e) => setAge(e.target.value)}
+            placeholder="Age"
+          />
 
-        <button type="submit">{editItem ? "Update Data" : "Add Data"}</button>
+          <Button type="submit">{editItem ? "Update Data" : "Add Data"}</Button>
+        </div>
       </form>
-      {error && <p>{error}</p>}
+      {error && <p className="text-red-500 ">{error}</p>}
+      <Separator className="my-3" />
+      {isLoading ? (
+        <div className="flex items-center space-x-4">
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-4 w-32" />
+          </div>
 
-      {
-        <ul>
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+        </div>
+      ) : (
+        <ul className="flex flex-wrap gap-4">
           {data.map((item) => (
-            <li key={item.id}>
-              {item.name} - {item.age}
-              <button onClick={() => handleEdit(item._id)}>Edit</button>
-              <button onClick={() => handleDelete(item._id)}>Delete</button>
+            <li key={item.id} className="w-50 p-2 rounded-md bg-card">
+              <h3 className="text-lg font-bold">{item.name}</h3>
+              <h4 className="text-sm text-gray-400">{item.age} years old</h4>
+              <div className="flex gap-2 mt-2">
+                <Button
+                  variant="secondary"
+                  onClick={() => handleEdit(item._id)}
+                >
+                  Edit
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => handleDelete(item._id)}
+                >
+                  Delete
+                </Button>
+              </div>
             </li>
           ))}
         </ul>
-      }
+      )}
     </div>
   );
 };
